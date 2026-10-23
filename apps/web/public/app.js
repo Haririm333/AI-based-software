@@ -27,7 +27,112 @@ let currentDefenseSessionId = null;
 let currentMentorRunId = "run-01";
 let activeMentorLang = "en";
 
+const FALLBACK_USER = {
+  id: "usr-01",
+  username: "hariram_tech",
+  full_name: "Hariram S.",
+  college: "College of Engineering, Guindy (CEG)",
+  state: "Tamil Nadu",
+  skills: { "Python": 320, "Web": 150, "ML": 90 },
+  avatar: "👨‍💻"
+};
+
+const FALLBACK_RISING = [
+  { creator_name: "Sneha Sundaram", avatar_url: "👩‍💻", project_title: "Tamil Speech Synthesis", score_before: 6.8, score_after: 9.2, score_delta: 2.4 },
+  { creator_name: "Rohan Deshmukh", avatar_url: "👨‍🔬", project_title: "Campus P2P Exchange", score_before: 5.1, score_after: 7.2, score_delta: 2.1 },
+  { creator_name: "Vivek Tiwari", avatar_url: "👨‍💼", project_title: "Student Resource Blog", score_before: 5.0, score_after: 6.8, score_delta: 1.8 }
+];
+
+const FALLBACK_POSTS = [
+  {
+    id: "post-01",
+    author_name: "Hariram S.",
+    author_handle: "@hariram_tech",
+    post_type: "SHOWCASE",
+    project_id: "repo-01",
+    title: "Smart Campus Energy Monitor (Flask + SQLite)",
+    body: "Built a telemetry aggregator for CEG lab circuits. Verified with Docker sandbox testing and automated pytest suite. Checks circuit wattage spikes every 3 seconds.",
+    score: 9.3,
+    skills: ["Python", "IoT", "SQLite"],
+    likes_count: 48,
+    comments_count: 12,
+    posted_at: "1 hour ago"
+  },
+  {
+    id: "post-02",
+    author_name: "Ananya Rao",
+    author_handle: "@ananya_hyderabad",
+    post_type: "SHOWCASE",
+    project_id: "repo-07",
+    title: "Paddy Leaf Blight Classifier for Telangana Farmers",
+    body: "Trained MobileNetV3 on 2,400 field photos of Telangana paddy leaves. Runs inference on CPU in under 70ms with 94.2% top-1 accuracy.",
+    score: 8.8,
+    skills: ["Python", "PyTorch", "ML"],
+    likes_count: 64,
+    comments_count: 19,
+    posted_at: "3 hours ago"
+  },
+  {
+    id: "post-03",
+    author_name: "Karthik Varma",
+    author_handle: "@karthik_warangal",
+    post_type: "SHOWCASE",
+    project_id: "repo-06",
+    title: "High-Throughput Bus Fleet Location API",
+    body: "FastAPI async pipeline tested with 500 concurrent telemetry pings per second. Utilizes Redis circular buffers to prevent database write bottlenecks.",
+    score: 9.1,
+    skills: ["Python", "FastAPI", "Systems"],
+    likes_count: 52,
+    comments_count: 8,
+    posted_at: "5 hours ago"
+  },
+  {
+    id: "post-04",
+    author_name: "Kavya Menon",
+    author_handle: "@kavya_kochi",
+    post_type: "TEAM_CALL",
+    title: "Need a Flutter or React Native developer for Farm Logistics App",
+    body: "Our Django backend for the Wayanad Coffee Cooperative is scored and verified (8.5/10). We need an engineer to build the offline-first mobile intake app for village weighing centers.",
+    skills_required: ["Mobile", "Flutter", "Web"],
+    roles_needed: ["Frontend Mobile Lead"],
+    likes_count: 31,
+    comments_count: 14,
+    posted_at: "6 hours ago"
+  },
+  {
+    id: "post-05",
+    author_name: "Rohan Deshmukh",
+    author_handle: "@rohan_pune",
+    post_type: "TEAM_CALL",
+    title: "Building Open-Source Drone Swarm Controller - Looking for Python Systems Dev",
+    body: "Looking for an engineer familiar with MAVLink and async socket programming. We have the simulator ready; need someone to write the path collision avoiding coordinator.",
+    skills_required: ["Python", "Systems", "IoT"],
+    roles_needed: ["Backend Systems Engineer"],
+    likes_count: 27,
+    comments_count: 9,
+    posted_at: "8 hours ago"
+  },
+  {
+    id: "post-06",
+    author_name: "Aditi Joshi",
+    author_handle: "@aditi_mumbai",
+    post_type: "UPCOMING",
+    title: "Municipal Circular Simplifier for Marathi Municipalities",
+    body: "Drafting an IndicBERT extractive summarizer to convert 12-page government PDFs into WhatsApp-friendly infographics. Researching OCR tools for regional fonts.",
+    skills: ["Python", "NLP", "ML"],
+    likes_count: 42,
+    comments_count: 7,
+    posted_at: "10 hours ago"
+  }
+];
+
 document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Instant optimistic render so screen is immediately populated on first paint
+  renderRightRail(FALLBACK_USER);
+  renderRisingStrip(FALLBACK_RISING);
+  renderFeedPosts(FALLBACK_POSTS);
+
+  // 2. Fetch live data from backend
   await loadCurrentUser();
   await loadRisingStrip();
   await loadFeed(true);
@@ -124,7 +229,8 @@ async function loadCurrentUser() {
 
     renderRightRail(user);
   } catch (err) {
-    console.error("Failed to load active user:", err);
+    console.warn("Failed to load active user, falling back to default:", err);
+    renderRightRail(FALLBACK_USER);
   }
 }
 
@@ -198,7 +304,8 @@ async function loadRisingStrip() {
       </div>
     `).join('');
   } catch (err) {
-    console.error("Failed to load rising strip:", err);
+    console.warn("Failed to load rising strip, using offline fallback:", err);
+    renderRisingStrip(FALLBACK_RISING);
   }
 }
 
@@ -227,7 +334,8 @@ async function loadFeed(reset = false) {
       loadMoreBtn.style.display = currentCursor ? "block" : "none";
     }
   } catch (err) {
-    console.error("Failed to load feed:", err);
+    console.warn("Failed to load feed, using offline fallback:", err);
+    renderFeedPosts(FALLBACK_POSTS, !reset);
   }
 }
 
