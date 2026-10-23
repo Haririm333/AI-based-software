@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REET | Where projects are your profile</title>
+  <meta name="description" content="REET: Project-first network for Indian youth. A student connects GitHub; REET checks it with real sandbox tests plus AI.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Top Bar (Fixed, 56px, White) -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <span class="logo-wordmark" onclick="switchTab('forYou')">REET</span>
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search projects or skills..." oninput="handleSearch(this.value)">
+      </div>
+    </div>
+
+    <div class="top-bar-right">
+      <button class="icon-btn" title="Messages" onclick="switchView('teamup')">
+        💬
+        <span class="icon-badge">3</span>
+      </button>
+      <button class="icon-btn" title="Notifications" onclick="alert('Notifications: 2 students interested in your project!')">
+        🔔
+        <span class="icon-badge">2</span>
+      </button>
+      <button class="avatar-btn" id="current-user-avatar" title="Switch User" onclick="switchView('profile')">
+        👨‍💻
+      </button>
+    </div>
+  </header>
+
+  <!-- 3-Column Desktop Container -->
+  <div class="app-container">
+    <!-- Left Navigation Rail (240px) -->
+    <aside class="left-nav">
+      <div>
+        <nav class="nav-list">
+          <li>
+            <button class="nav-link active" id="nav-feed" onclick="switchView('feed')">
+              <span>📰</span> Home Feed
+            </button>
+          </li>
+          <li>
+            <button class="nav-link" id="nav-import" onclick="openImportModal()">
+              <span>⚡</span> Import from GitHub
+            </button>
+          </li>
+          <li>
+            <button class="nav-link" id="nav-teamup" onclick="switchView('teamup')">
+              <span>🤝</span> Team Calls
+              <span class="nav-link-badge">4</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-link" id="nav-trust" onclick="switchView('trust')">
+              <span>🛡️</span> Trust Shield
+              <span class="nav-link-badge" style="background: var(--semantic-red-light); color: var(--semantic-red);">45s Demo</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-link" id="nav-profile" onclick="switchView('profile')">
+              <span>👤</span> Proof Profile
+            </button>
+          </li>
+          <li>
+            <button class="nav-link" id="nav-coach" onclick="switchView('coach')">
+              <span>💡</span> AI Idea Coach
+            </button>
+          </li>
+        </nav>
+      </div>
+
+      <!-- Demo Account Switcher Card -->
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-card); padding: 12px; margin-bottom: 8px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px;">
+          Active Student (14 Seed Accounts)
+        </div>
+        <select class="search-input" id="user-select-dropdown" style="width: 100%; padding: 6px 10px;" onchange="onUserSwitch(this.value)">
+          <option value="usr-01">Hariram S. (CEG, Tamil Nadu)</option>
+          <option value="usr-02">Ananya Rao (JNTU, Telangana)</option>
+          <option value="usr-03">Rohan Deshmukh (COEP, Maharashtra)</option>
+          <option value="usr-04">Kavya Menon (CUSAT, Kerala)</option>
+          <option value="usr-05">Vivek Tiwari (HBTU, Uttar Pradesh)</option>
+          <option value="usr-06">Sneha Sundaram (TCE, Tamil Nadu)</option>
+          <option value="usr-07">Karthik Varma (NIT Warangal)</option>
+          <option value="usr-08">Meera Nair (CET Trivandrum)</option>
+          <option value="usr-09">Aditi Joshi (VJTI Mumbai)</option>
+          <option value="usr-10">Pranav Gupta (AKGEC Ghaziabad)</option>
+          <option value="usr-11">Deepa Natarajan (PSG Tech, Tamil Nadu)</option>
+          <option value="usr-12">Arjun Reddy (Andhra Univ)</option>
+          <option value="usr-13">Farhan Siddiqui (AMU Aligarh)</option>
+          <option value="usr-14">Sandhya Iyer (GEC Thrissur)</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Center Feed Column (600px) -->
+    <main class="center-feed">
+      <!-- VIEW 1: HOME FEED -->
+      <div id="feed-view-container">
+        <!-- Rising Projects Strip -->
+        <section class="rising-strip-card">
+          <div class="strip-header">
+            <span class="strip-title">🔥 Rising Projects This Week</span>
+            <span class="strip-badge">+ Score Growth</span>
+          </div>
+          <div class="rising-items-scroll" id="rising-strip-scroll">
+            <!-- Populated dynamically -->
+          </div>
+        </section>
+
+        <!-- Feed Tabs (Following, For You, Team Calls) -->
+        <section class="feed-tabs-card" style="margin-top: 12px;">
+          <button class="feed-tab" id="tab-following" onclick="switchTab('following')">Following</button>
+          <button class="feed-tab active" id="tab-forYou" onclick="switchTab('forYou')">For You</button>
+          <button class="feed-tab" id="tab-teamCalls" onclick="switchTab('teamCalls')">Team Calls</button>
+        </section>
+
+        <!-- Sub-Filters Row (Min score, Skill chips) -->
+        <div class="sub-filter-row" style="margin-top: 10px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-right: 4px;">Score:</span>
+          <button class="filter-chip active" id="chip-score-all" onclick="filterMinScore(null)">All</button>
+          <button class="filter-chip" id="chip-score-6" onclick="filterMinScore(6.0)">6+ Verified</button>
+          <button class="filter-chip" id="chip-score-8" onclick="filterMinScore(8.0)">8+ Verified</button>
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-left: 8px; margin-right: 4px;">Skill:</span>
+          <button class="filter-chip" id="chip-skill-python" onclick="filterSkill('Python')">Python</button>
+          <button class="filter-chip" id="chip-skill-web" onclick="filterSkill('Web')">Web</button>
+          <button class="filter-chip" id="chip-skill-ml" onclick="filterSkill('ML')">ML</button>
+        </div>
+
+        <!-- Feed Stream Container -->
+        <div id="feed-stream" style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
+          <!-- Injected dynamically -->
+        </div>
+
+        <!-- Keyset Pagination Load More -->
+        <div id="load-more-container" style="text-align: center; margin-top: 16px; margin-bottom: 24px;">
+          <button class="btn-secondary" id="btn-load-more" onclick="loadNextPage()" style="display: none; width: 100%;">
+            Load More Verified Projects ↓
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 2: TEAM UP & BHASHA BRIDGE -->
+      <div id="teamup-view-container" style="display: none;">
+        <!-- Injected dynamically by app.js -->
+      </div>
+
+      <!-- VIEW 3: TRUST SHIELD -->
+      <div id="trust-view-container" style="display: none;">
+        <!-- Injected dynamically by app.js -->
+      </div>
+
+      <!-- VIEW 4: PROOF PROFILE -->
+      <div id="profile-view-container" style="display: none;">
+        <!-- Injected dynamically by app.js -->
+      </div>
+
+      <!-- VIEW 5: AI IDEA COACH -->
+      <div id="coach-view-container" style="display: none;">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </main>
+
+    <!-- Right Rail Column (320px) -->
+    <aside class="right-rail">
+      <!-- Quick Action Card -->
+      <div class="rail-widget" style="text-align: center;">
+        <button class="btn-primary" style="width: 100%; padding: 10px; font-size: 14px;" onclick="openImportModal()">
+          + Post a Project
+        </button>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
+          Cloned into ephemeral read-only sandbox. You own your code.
+        </div>
+      </div>
+
+      <!-- Skill Level Summary Widget -->
+      <div class="rail-widget" id="skill-summary-widget">
+        <div class="widget-title">Your Verified Skill Levels</div>
+        <div id="right-rail-skills-list">
+          <div style="font-size: 13px; color: var(--text-secondary);">Loading skills...</div>
+        </div>
+      </div>
+
+      <!-- Suggested Students to Follow -->
+      <div class="rail-widget">
+        <div class="widget-title">Engineers to Follow</div>
+        <div id="suggested-students-list">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============================================================
+       MODAL: 5-CATEGORY SCORE BREAKDOWN POPOVER
+       ============================================================ -->
+  <div class="breakdown-modal" id="breakdown-modal" onclick="closeModalOnBackdrop(event, 'breakdown-modal')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase;">REET Verified Proof Engine</div>
+          <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-top: 2px;" id="modal-project-title">Project Breakdown</h2>
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+            <div class="score-badge">
+              <span id="modal-overall-score">9.3</span>
+              <span style="font-size: 11px; color: var(--text-secondary); font-weight: normal;">/ 10</span>
+            </div>
+            <span class="verified-tag" id="modal-confidence-tag">HIGH CONFIDENCE</span>
+            <span id="modal-injection-tag" style="display: none; font-size: 11px; color: var(--semantic-red); font-weight: 600;">⚠️ Injection Flagged (-2.5)</span>
+          </div>
+        </div>
+        <button class="translate-btn" onclick="closeBreakdownModal()" style="font-size: 16px;">✕</button>
+      </div>
+
+      <div id="breakdown-categories-container">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 16px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="btn-primary" onclick="openDefenseModalFromBreakdown()" style="font-size: 12px; padding: 6px 10px;">
+            🛡️ Defend Code (+0.5)
+          </button>
+          <button class="btn-secondary" onclick="openMentorModalFromBreakdown()" style="font-size: 12px; padding: 6px 10px;">
+            🧑‍🏫 Ask Mentor
+          </button>
+          <button class="btn-secondary" onclick="resubmitProject()" style="font-size: 12px; padding: 6px 10px;">
+            📈 Resubmit & Grow
+          </button>
+          <button class="btn-secondary" onclick="requestScoreAppeal()" style="font-size: 12px; padding: 6px 10px;">
+            ⚖️ Appeal
+          </button>
+        </div>
+        <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono);" id="modal-commit-hash">
+          commit: 9f82a1c
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: GITHUB IMPORT & CONSENT
+       ============================================================ -->
+  <div class="import-modal" id="import-modal" onclick="closeModalOnBackdrop(event, 'import-modal')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--primary-blue);">Connect GitHub Repository</div>
+          <h2 style="font-size: 18px; font-weight: 700;">Import & Sandbox Proof Grade</h2>
+        </div>
+        <button class="translate-btn" onclick="closeImportModal()" style="font-size: 16px;">✕</button>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Public Repository URL</label>
+        <input type="text" class="search-input" id="import-repo-url" style="width: 100%; border-radius: var(--radius-btn);" placeholder="https://github.com/username/repository">
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+          <span>Or Test a Hand-Graded Sample Repository:</span>
+          <span style="color: var(--text-secondary); font-weight: normal;">12 Test Profiles</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;" id="sample-repos-grid">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <div style="background: var(--bg-page); border: 1px solid var(--border-color); padding: 10px 12px; border-radius: var(--radius-btn); margin-bottom: 16px;">
+        <label style="display: flex; gap: 8px; font-size: 12px; cursor: pointer; color: var(--text-main);">
+          <input type="checkbox" id="import-consent-checkbox" checked style="margin-top: 2px;">
+          <span>
+            <strong>Explicit Consent:</strong> I authorize REET to clone this public code into an ephemeral read-only Docker sandbox, run static linters, and generate a 5-category evaluation. I may permanently purge my project and code at any time via "Delete my project & data".
+          </span>
+        </label>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-secondary" onclick="closeImportModal()">Cancel</button>
+        <button class="btn-primary" id="btn-submit-import" onclick="executeImportAndScore()">
+          Run REET Proof Pipeline →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other Modals (Code Defense, Mentor, Payment Guard) -->
+  <div class="defense-modal" id="defense-modal" onclick="closeModalOnBackdrop(event, 'defense-modal')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--primary-blue);">REET Code Defense</div>
+          <h2 style="font-size: 18px; font-weight: 700;" id="defense-project-title">3 Timed Questions Grounded in Your Code</h2>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--semantic-red); background: var(--semantic-red-light); padding: 2px 8px; border-radius: var(--radius-sm);" id="defense-timer-text">
+          01:00
+        </div>
+      </div>
+      <div id="defense-questions-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+        <button class="btn-secondary" onclick="closeDefenseModal()">Cancel</button>
+        <button class="btn-primary" id="btn-submit-defense" onclick="submitCodeDefenseAnswers()">Submit Defense Answers →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mentor-modal" id="mentor-modal" onclick="closeModalOnBackdrop(event, 'mentor-modal')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--primary-blue);">REET Grounded Mentor</div>
+          <h2 style="font-size: 18px; font-weight: 700;">Grounded Coaching in 5 Indic Languages</h2>
+        </div>
+        <button class="translate-btn" onclick="closeMentorModal()" style="font-size: 16px;">✕</button>
+      </div>
+      <div class="sub-filter-row" style="margin-bottom: 12px;" id="mentor-lang-tabs">
+        <button class="filter-chip active" onclick="switchMentorLang('en')">English</button>
+        <button class="filter-chip" onclick="switchMentorLang('ta')">தமிழ் (Tamil)</button>
+        <button class="filter-chip" onclick="switchMentorLang('hi')">हिन्दी (Hindi)</button>
+        <button class="filter-chip" onclick="switchMentorLang('te')">తెలుగు (Telugu)</button>
+        <button class="filter-chip" onclick="switchMentorLang('ml')">മലയാളം (Malayalam)</button>
+      </div>
+      <div id="mentor-content-body"></div>
+    </div>
+  </div>
+
+  <div class="payment-modal" id="payment-modal" onclick="closeModalOnBackdrop(event, 'payment-modal')">
+    <div class="modal-dialog" style="border-top: 4px solid var(--semantic-red);">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <span style="font-size: 28px;">🚨</span>
+        <div>
+          <h3 style="font-size: 17px; font-weight: 700; color: var(--semantic-red);">Payment-Moment Intercepted by Trust Shield</h3>
+          <div style="font-size: 12px; color: var(--text-secondary);">Genuine corporate employers never charge students for job seats.</div>
+        </div>
+      </div>
+      <div style="background: var(--semantic-red-light); padding: 12px; border-radius: var(--radius-btn); text-align: center; margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--semantic-red); font-weight: 700;">Solicited Amount:</div>
+        <div style="font-size: 22px; font-weight: 700; color: var(--semantic-red); font-family: var(--font-mono);" id="pm-modal-amount">₹2,000</div>
+        <div style="font-size: 12px; font-family: var(--font-mono); color: var(--text-secondary);" id="pm-modal-upi">google.hr.recruitment@okicici</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-page); padding: 8px 12px; border-radius: var(--radius-btn); margin-bottom: 12px;">
+        <span style="font-size: 12px; font-weight: 600;">Cybercrime Helpline:</span>
+        <span style="font-weight: 700; color: var(--semantic-red); font-family: var(--font-mono);">📞 1930</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-primary" style="background: var(--semantic-red);" onclick="resolvePaymentModal('ABORT')">Don't send (Recommended)</button>
+        <button class="btn-secondary" onclick="resolvePaymentModal('OVERRIDE')">I understand the risk (Logged)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
